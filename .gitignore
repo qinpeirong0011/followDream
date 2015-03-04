@@ -1,0 +1,7 @@
+target
+bin
+*.db
+*.class
+*.project
+*.iml
+*.classpath
