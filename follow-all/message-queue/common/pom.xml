@@ -10,19 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.qinpr.followDream</groupId>
-    <artifactId>com.qinpr.followDream.messageQueue.store</artifactId>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.qinpr.followDream</groupId>
-            <artifactId>com.qinpr.followDream.messageQueue.common</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna</artifactId>
-        </dependency>
-    </dependencies>
+    <artifactId>com.qinpr.followDream.messageQueue.common</artifactId>
 
 
 </project>
