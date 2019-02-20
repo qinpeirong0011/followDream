@@ -6,4 +6,10 @@ package com.qinpr.follow.messageQueue.store;
 public interface MessageStore {
 
     void start() throws Exception;
+
+    void shutdown();
+
+    void destroy();
+
+    PutMessageResult putMessage(final MessageExtBrokerInner msg);
 }

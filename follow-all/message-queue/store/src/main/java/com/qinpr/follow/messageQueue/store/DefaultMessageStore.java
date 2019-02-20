@@ -90,4 +90,22 @@ public class DefaultMessageStore implements MessageStore {
         this.commitLog.start();
         this.shutdown = false;
     }
+
+    @Override
+    public void shutdown() {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    @Override
+    public PutMessageResult putMessage(final MessageExtBrokerInner msg) {
+        PutMessageResult result = this.commitLog.putMessage(msg);
+        return result;
+    }
+
+
 }

@@ -1,6 +1,7 @@
 package com.qinpr.follow.messageQueue.store;
 
 import com.qinpr.follow.messageQueue.common.ServiceThread;
+import com.qinpr.follow.messageQueue.common.UtilAll;
 import com.qinpr.follow.messageQueue.store.config.FlushDiskType;
 
 /**
@@ -14,6 +15,8 @@ public class CommitLog {
 
     private final FlushCommitLogService commitLogService;
 
+    private final PutMessageLock putMessageLock;
+
     public CommitLog(final DefaultMessageStore defaultMessageStore) {
         this.mappedFileQueue = new MappedFileQueue(defaultMessageStore.getMessageStoreConfig().getStorePathCommitLog(),
                 defaultMessageStore.getMessageStoreConfig().getMapedFileSizeCommitLog(), defaultMessageStore.getAllocateMappedFileService());
@@ -26,10 +29,35 @@ public class CommitLog {
         }
 
         this.commitLogService = new CommitRealTimeService();
+        this.putMessageLock = defaultMessageStore.getMessageStoreConfig().isUseReentrantLockWhenPutMessage() ?
+                new PutMessageReentrantLock() : new PutMessageSpinLock();
     }
 
     public void start() {
+        this.flushCommitLogService.start();
+        if (defaultMessageStore.getMessageStoreConfig().isTransientStorePoolEnable()) {
+            this.commitLogService.start();
+        }
+    }
 
+    public PutMessageResult putMessage(final MessageExtBrokerInner msg) {
+        msg.setStoreTimestamp(System.currentTimeMillis());
+        msg.setBodyCRC(UtilAll.crc32(msg.getBody()));
+
+        AppendMessageResult result = null;
+        String topic = msg.getTopic();
+        int queueId = msg.getQueueId();
+
+        MappedFile mappedFile = this.mappedFileQueue.getLastMappedFile();
+        putMessageLock.lock();
+
+        try {
+
+        } finally {
+            putMessageLock.unlock();
+        }
+
+        return null;
     }
 
     abstract class FlushCommitLogService extends ServiceThread {

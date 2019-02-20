@@ -42,6 +42,8 @@ public class MessageStoreConfig {
     // Flush page size when the disk in warming state
     private int flushLeastPagesWhenWarmMapedFile = 1024 / 4 * 16;
 
+    private boolean useReentrantLockWhenPutMessage = false;
+
     public int getMapedFileSizeCommitLog() {
         return mapedFileSizeCommitLog;
     }
@@ -145,5 +147,13 @@ public class MessageStoreConfig {
 
     public void setStorePathCommitLog(final String storePathCommitLog) {
         this.storePathCommitLog = storePathCommitLog;
+    }
+
+    public boolean isUseReentrantLockWhenPutMessage() {
+        return useReentrantLockWhenPutMessage;
+    }
+
+    public void setUseReentrantLockWhenPutMessage(final boolean useReentrantLockWhenPutMessage) {
+        this.useReentrantLockWhenPutMessage = useReentrantLockWhenPutMessage;
     }
 }

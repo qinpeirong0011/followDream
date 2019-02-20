@@ -1,6 +1,7 @@
 package com.qinpr.follow.messageQueue.common.message;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -16,5 +17,60 @@ public class Message implements Serializable {
     private String transactionId;
 
     public Message() {
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(final String topic) {
+        this.topic = topic;
+    }
+
+    public int getFlag() {
+        return flag;
+    }
+
+    public void setFlag(final int flag) {
+        this.flag = flag;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(final Map<String, String> properties) {
+        this.properties = properties;
+    }
+
+    public byte[] getBody() {
+        return body;
+    }
+
+    public void setBody(final byte[] body) {
+        this.body = body;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(final String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public void setTags(String tags) {
+        this.putProperty(MessageConst.PROPERTY_TAGS, tags);
+    }
+
+    public void setKeys(String keys) {
+        this.putProperty(MessageConst.PROPERTY_KEYS, keys);
+    }
+
+    void putProperty(final String name , final String value) {
+        if (null == this.properties) {
+            this.properties = new HashMap<String, String>();
+        }
+        this.properties.put(name, value);
     }
 }
