@@ -1,6 +1,7 @@
 package com.qinpr.follow.messageQueue.store;
 
 import com.qinpr.follow.messageQueue.common.BrokerConfig;
+import com.qinpr.follow.messageQueue.common.SystemClock;
 import com.qinpr.follow.messageQueue.store.config.MessageStoreConfig;
 import com.qinpr.follow.messageQueue.store.config.StorePathConfigHelper;
 import com.qinpr.follow.messageQueue.store.stats.BrokerStatsManager;
@@ -33,6 +34,8 @@ public class DefaultMessageStore implements MessageStore {
     private final AllocateMappedFileService allocateMappedFileService;
     //对外内存池化
     private final TransientStorePool transientStorePool;
+
+    private final SystemClock systemClock = new SystemClock();
 
     private RandomAccessFile lockFile;
 
@@ -75,6 +78,10 @@ public class DefaultMessageStore implements MessageStore {
 
     public AllocateMappedFileService getAllocateMappedFileService() {
         return allocateMappedFileService;
+    }
+
+    public SystemClock getSystemClock() {
+        return systemClock;
     }
 
     @Override

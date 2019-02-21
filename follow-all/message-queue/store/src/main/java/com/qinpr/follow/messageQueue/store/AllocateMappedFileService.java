@@ -2,20 +2,20 @@ package com.qinpr.follow.messageQueue.store;
 
 import com.qinpr.follow.messageQueue.common.ServiceThread;
 import com.qinpr.follow.messageQueue.common.UtilAll;
+import com.sun.corba.se.spi.ior.IdentifiableFactory;
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.*;
 
 /**
  * Created by qinpr on 2019/2/19.
  */
 public class AllocateMappedFileService extends ServiceThread {
 
+    private static int waitTimeOut = 1000 * 5;
     private ConcurrentMap<String, AllocateRequest> requestTable = new ConcurrentHashMap<String, AllocateRequest>();
     private PriorityBlockingQueue<AllocateRequest> requestQueue = new PriorityBlockingQueue<AllocateRequest>();
     private DefaultMessageStore messageStore;
@@ -23,6 +23,63 @@ public class AllocateMappedFileService extends ServiceThread {
 
     public AllocateMappedFileService(DefaultMessageStore messageStore) {
         this.messageStore = messageStore;
+    }
+
+    public MappedFile putRequestAndReturnMappedFile(String nextFilePath, String nextNextFilePath, int fileSize) {
+        int canSubmitRequests = 2;
+        if (this.messageStore.getMessageStoreConfig().isTransientStorePoolEnable()) {
+
+        }
+
+        AllocateRequest nextReq = new AllocateRequest(nextFilePath, fileSize);
+        boolean nextPutOK = this.requestTable.putIfAbsent(nextFilePath, nextReq) == null;
+
+        if (nextPutOK) {
+            if (canSubmitRequests <= 0) {
+                this.requestTable.remove(nextFilePath);
+                return null;
+            }
+            boolean offerOK = this.requestQueue.offer(nextReq);
+            if (!offerOK) {
+
+            }
+            canSubmitRequests--;
+        }
+
+        AllocateRequest nextNextReq = new AllocateRequest(nextNextFilePath, fileSize);
+        boolean nextNextPutOK = this.requestTable.putIfAbsent(nextNextFilePath, nextNextReq) == null;
+        if (nextNextPutOK) {
+            if (canSubmitRequests <= 0) {
+                this.requestTable.remove(nextNextFilePath);
+            } else {
+                boolean offerOK = this.requestQueue.offer(nextNextReq);
+                if (!offerOK) {
+
+                }
+            }
+        }
+
+        if (hasException) {
+            return null;
+        }
+
+        AllocateRequest result = this.requestTable.get(nextFilePath);
+        try {
+            if (result != null) {
+                boolean waitOK = result.getCountDownLatch().await(waitTimeOut, TimeUnit.MILLISECONDS);
+                if (!waitOK) {
+                    return null;
+                } else {
+                    this.requestTable.remove(nextFilePath);
+                    return result.getMappedFile();
+                }
+            } else {
+
+            }
+        } catch (InterruptedException e) {
+
+        }
+        return null;
     }
 
     @Override

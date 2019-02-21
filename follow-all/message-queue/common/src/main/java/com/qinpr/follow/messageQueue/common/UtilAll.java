@@ -1,6 +1,7 @@
 package com.qinpr.follow.messageQueue.common;
 
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.zip.CRC32;
 
 /**
@@ -39,5 +40,13 @@ public class UtilAll {
             }
             file.delete();
         }
+    }
+
+    public static String offset2FileName(final long offset) {
+        final NumberFormat nf = NumberFormat.getInstance();
+        nf.setMinimumIntegerDigits(20);
+        nf.setMaximumFractionDigits(0);
+        nf.setGroupingUsed(false);
+        return nf.format(offset);
     }
 }

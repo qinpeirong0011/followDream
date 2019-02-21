@@ -44,6 +44,9 @@ public class MessageStoreConfig {
 
     private boolean useReentrantLockWhenPutMessage = false;
 
+    // The maximum size of a single log file,default is 512K
+    private int maxMessageSize = 1024 * 1024 * 4;
+
     public int getMapedFileSizeCommitLog() {
         return mapedFileSizeCommitLog;
     }
@@ -155,5 +158,13 @@ public class MessageStoreConfig {
 
     public void setUseReentrantLockWhenPutMessage(final boolean useReentrantLockWhenPutMessage) {
         this.useReentrantLockWhenPutMessage = useReentrantLockWhenPutMessage;
+    }
+
+    public int getMaxMessageSize() {
+        return maxMessageSize;
+    }
+
+    public void setMaxMessageSize(final int maxMessageSize) {
+        this.maxMessageSize = maxMessageSize;
     }
 }
