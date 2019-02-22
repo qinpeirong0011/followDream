@@ -10,4 +10,20 @@ public class MessageExtBrokerInner extends MessageExt {
 
     private String propertiesString;
     private long tagsCode;
+
+    public String getPropertiesString() {
+        return propertiesString;
+    }
+
+    public void setPropertiesString(final String propertiesString) {
+        this.propertiesString = propertiesString;
+    }
+
+    public long getTagsCode() {
+        return tagsCode;
+    }
+
+    public void setTagsCode(final long tagsCode) {
+        this.tagsCode = tagsCode;
+    }
 }

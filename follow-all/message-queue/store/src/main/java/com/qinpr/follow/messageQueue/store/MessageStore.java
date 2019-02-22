@@ -12,4 +12,6 @@ public interface MessageStore {
     void destroy();
 
     PutMessageResult putMessage(final MessageExtBrokerInner msg);
+
+    long now();
 }

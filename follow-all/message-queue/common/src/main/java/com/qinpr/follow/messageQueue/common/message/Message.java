@@ -1,5 +1,7 @@
 package com.qinpr.follow.messageQueue.common.message;
 
+import org.omg.CORBA.PUBLIC_MEMBER;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,4 +75,25 @@ public class Message implements Serializable {
         }
         this.properties.put(name, value);
     }
+
+    public String getProperty(final String name) {
+        if (null == this.properties) {
+            this.properties = new HashMap<String, String>();
+        }
+        return this.properties.get(name);
+    }
+
+    public void setWaitStoreMsgOK(boolean waitStoreMsgOK) {
+        this.putProperty(MessageConst.PROPERTY_WAIT_STORE_MSG_OK, Boolean.toString(waitStoreMsgOK));
+    }
+
+    public boolean isWaitStoreMsgOK() {
+        String result = this.getProperty(MessageConst.PROPERTY_WAIT_STORE_MSG_OK);
+        if (null == result) {
+            return true;
+        }
+        return Boolean.parseBoolean(result);
+    }
+
+
 }

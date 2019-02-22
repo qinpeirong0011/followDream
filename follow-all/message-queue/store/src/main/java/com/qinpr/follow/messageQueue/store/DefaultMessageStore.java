@@ -114,5 +114,10 @@ public class DefaultMessageStore implements MessageStore {
         return result;
     }
 
+    @Override
+    public long now() {
+        return this.systemClock.now();
+    }
+
 
 }

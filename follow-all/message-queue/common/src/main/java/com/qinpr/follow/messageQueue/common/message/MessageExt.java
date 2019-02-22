@@ -1,6 +1,8 @@
 package com.qinpr.follow.messageQueue.common.message;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 
 /**
  * Created by qinpr on 2019/2/19.
@@ -25,6 +27,8 @@ public class MessageExt extends Message {
     private long commitLogOffset;
     private int bodyCRC;
     private int reconsumeTimes;
+
+    private long preparedTransactionOffset;
 
     public MessageExt() {
     }
@@ -123,5 +127,29 @@ public class MessageExt extends Message {
 
     public void setReconsumeTimes(final int reconsumeTimes) {
         this.reconsumeTimes = reconsumeTimes;
+    }
+
+    public long getPreparedTransactionOffset() {
+        return preparedTransactionOffset;
+    }
+
+    public void setPreparedTransactionOffset(final long preparedTransactionOffset) {
+        this.preparedTransactionOffset = preparedTransactionOffset;
+    }
+
+    public ByteBuffer getStoreHostBytes(ByteBuffer byteBuffer) {
+        return socketAddress2ByteBuffer(this.storeHost, byteBuffer);
+    }
+
+    public ByteBuffer getBornHostBytes(ByteBuffer byteBuffer) {
+        return socketAddress2ByteBuffer(this.bornHost, byteBuffer);
+    }
+
+    public static ByteBuffer socketAddress2ByteBuffer(final SocketAddress socketAddress, final ByteBuffer byteBuffer) {
+        InetSocketAddress inetSocketAddress = (InetSocketAddress) socketAddress;
+        byteBuffer.put(inetSocketAddress.getAddress().getAddress(), 0, 4);
+        byteBuffer.putInt(inetSocketAddress.getPort());
+        byteBuffer.flip();
+        return byteBuffer;
     }
 }

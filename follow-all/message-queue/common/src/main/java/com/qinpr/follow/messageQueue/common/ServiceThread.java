@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class ServiceThread implements Runnable {
     protected final Thread thread;
 
+    protected volatile AtomicBoolean hasNotified = new AtomicBoolean(false);
     protected volatile boolean stopped = false;
 
     public ServiceThread() {
