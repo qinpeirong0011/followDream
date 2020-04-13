@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by qinpr on 2019/2/19.
@@ -24,7 +25,6 @@ public class CommitLog {
     private final MappedFileQueue mappedFileQueue;
     private final DefaultMessageStore defaultMessageStore;
     private final FlushCommitLogService flushCommitLogService;
-
     private final FlushCommitLogService commitLogService;
 
     private final AppendMessageCallback appendMessageCallback;
@@ -105,7 +105,7 @@ public class CommitLog {
         }
 
         PutMessageResult putMessageResult = new PutMessageResult(PutMessageStatus.PUT_OK, result);
-
+        handleDiskFlush(result, putMessageResult, msg);
         return putMessageResult;
     }
 
@@ -115,7 +115,12 @@ public class CommitLog {
             if (messageExt.isWaitStoreMsgOK()) {
                 GroupCommitRequest request = new GroupCommitRequest(result.getWroteOffset() + result.getWroteBytes());
                 service.putRequest(request);
-
+                boolean flushOK = request.waitForFlush(this.defaultMessageStore.getMessageStoreConfig().getSyncFlushTimeout());
+                if (!flushOK) {
+                    putMessageResult.setPutMessageStatus(PutMessageStatus.FLUSH_DISK_TIMEOUT);
+                }
+            } else {
+                service.wakeup();
             }
         }
     }
@@ -135,6 +140,20 @@ public class CommitLog {
 
         public long getNextOffset() {
             return nextOffset;
+        }
+
+        public boolean waitForFlush(long timeout) {
+            try {
+                this.countDownLatch.await(timeout, TimeUnit.MILLISECONDS);
+                return this.flushOK;
+            } catch (InterruptedException e) {
+                return false;
+            }
+        }
+
+        public void wakeupCustomer(final boolean flushOK) {
+            this.flushOK = flushOK;
+            this.countDownLatch.countDown();
         }
     }
 
@@ -159,7 +178,59 @@ public class CommitLog {
 
         @Override
         public void run() {
+           while (!this.isStopped()) {
+               try {
+                   this.waitForRunning(10);
+                   this.doCommit();
+               } catch (Exception e) {
 
+               }
+           }
+
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+
+            }
+
+            synchronized (this) {
+                this.swapRequests();
+            }
+            this.doCommit();
+        }
+
+        @Override
+        protected void onWaitEnd() {
+            this.swapRequests();
+        }
+
+        private void doCommit() {
+            synchronized (this.requestsRead) {
+                if (!this.requestsRead.isEmpty()) {
+                    for (GroupCommitRequest req : this.requestsRead) {
+                        boolean flushOK = false;
+                        for (int i = 0; i < 2; i++) {
+                            flushOK = CommitLog.this.mappedFileQueue.getFlushedWhere() >= req.getNextOffset();
+                            if (!flushOK) {
+                                CommitLog.this.mappedFileQueue.flush(0);
+                            }
+                        }
+                        req.wakeupCustomer(flushOK);
+                    }
+
+                    long storeTimestamp = CommitLog.this.mappedFileQueue.getStoreTimestamp();
+                    if (storeTimestamp > 0) {
+                        //todo
+                    }
+                    this.requestsRead.clear();
+                }
+            }
+        }
+
+        private void swapRequests() {
+            List<GroupCommitRequest> tmp = this.requestsWrite;
+            this.requestsWrite = this.requestsRead;
+            this.requestsRead = tmp;
         }
     }
 

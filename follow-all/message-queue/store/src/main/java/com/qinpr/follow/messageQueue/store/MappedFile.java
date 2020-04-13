@@ -18,11 +18,13 @@ import java.util.concurrent.atomic.AtomicLong;
  * Created by qinpr on 2019/2/19.
  */
 public class MappedFile extends ReferenceResource {
-
+    public static final int OS_PAGE_SIZE = 1024 * 4;
     private static final AtomicLong TOTAL_MAPPED_VIRTUAL_MEMORY = new AtomicLong(0);
     private static final AtomicInteger TOTAL_MAPPED_FILES = new AtomicInteger(0);
 
     protected final AtomicInteger wrotePosition = new AtomicInteger(0);
+    protected final AtomicInteger committedPosition = new AtomicInteger(0);
+    private final AtomicInteger flushedPosition = new AtomicInteger(0);
 
     protected int fileSize;
     protected FileChannel fileChannel;
@@ -114,6 +116,10 @@ public class MappedFile extends ReferenceResource {
         return storeTimestamp;
     }
 
+    public int getFlushedPosition() {
+        return flushedPosition.get();
+    }
+
     public void setFirstCreateInQueue(final boolean firstCreateInQueue) {
         this.firstCreateInQueue = firstCreateInQueue;
     }
@@ -125,6 +131,48 @@ public class MappedFile extends ReferenceResource {
      */
     public void warmMappedFile(FlushDiskType type, int pages) {
 
+    }
+
+    public int flush(final int flushLeastPages) {
+        if (isAbleToFlush(flushLeastPages)) {
+            if (this.hold()) {
+                int value = getReadPosition();
+                try {
+                    if (writeBuffer != null || this.fileChannel.position() != 0) {
+                        this.fileChannel.force(false);
+                    } else {
+                        this.mappedByteBuffer.force();
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+
+                this.flushedPosition.set(value);
+                this.release();
+            } else {
+                this.flushedPosition.set(getReadPosition());
+            }
+        }
+        return this.getFlushedPosition();
+    }
+
+    private boolean isAbleToFlush(final int flushLeastPages) {
+        int flush = this.flushedPosition.get();
+        int write = getReadPosition();
+
+        if (this.isFull()) {
+            return true;
+        }
+
+        if (flushLeastPages > 0 ) {
+            return ((write / OS_PAGE_SIZE) - (flush / OS_PAGE_SIZE)) >= flushLeastPages;
+        }
+
+        return write > flush;
+    }
+
+    private int getReadPosition() {
+        return this.writeBuffer == null ? this.wrotePosition.get() : this.committedPosition.get();
     }
 
     public AppendMessageResult appendMessage(final MessageExtBrokerInner msg, final AppendMessageCallback cb) {
@@ -150,5 +198,28 @@ public class MappedFile extends ReferenceResource {
             return result;
         }
         return new AppendMessageResult(AppendMessageStatus.UNKNOWN_ERROR);
+    }
+
+    @Override
+    public boolean cleanup(final long currentRef) {
+        if (this.isAvailable()) {
+            return false;
+        }
+
+        if (this.isCleanupOver()) {
+            return true;
+        }
+
+        clean(this.mappedByteBuffer);
+        TOTAL_MAPPED_VIRTUAL_MEMORY.addAndGet(this.fileSize * (-1));
+        TOTAL_MAPPED_FILES.decrementAndGet();
+        return true;
+    }
+
+    public static void clean(final ByteBuffer buffer) {
+        if (buffer == null || !buffer.isDirect() || buffer.capacity() == 0) {
+            return;
+        }
+        //todo
     }
 }

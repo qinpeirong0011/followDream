@@ -87,7 +87,7 @@ public class DefaultMessageStore implements MessageStore {
     @Override
     public void start() throws Exception {
         lock = lockFile.getChannel().tryLock(0, 1, false);
-        if (lock == null || lock.isShared() || lock.isValid()) {
+        if (lock == null || lock.isShared() || !lock.isValid()) {
             throw new RuntimeException("Lock failed, MQ already started");
         }
 

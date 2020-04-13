@@ -38,7 +38,7 @@ public class DefaultMessageStoreTest {
 
     @Test
     public void testWriteAndRead() {
-        long totalMsgs = 10;
+        long totalMsgs = 1;
         QUEUE_TOTAL = 1;
         MessageBody = StoreMessage.getBytes();
 

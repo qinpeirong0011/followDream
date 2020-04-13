@@ -11,4 +11,20 @@ public class PutMessageResult {
         this.putMessageStatus = putMessageStatus;
         this.appendMessageResult = appendMessageResult;
     }
+
+    public PutMessageStatus getPutMessageStatus() {
+        return putMessageStatus;
+    }
+
+    public void setPutMessageStatus(final PutMessageStatus putMessageStatus) {
+        this.putMessageStatus = putMessageStatus;
+    }
+
+    public AppendMessageResult getAppendMessageResult() {
+        return appendMessageResult;
+    }
+
+    public void setAppendMessageResult(final AppendMessageResult appendMessageResult) {
+        this.appendMessageResult = appendMessageResult;
+    }
 }

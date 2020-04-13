@@ -47,6 +47,8 @@ public class MessageStoreConfig {
     // The maximum size of a single log file,default is 512K
     private int maxMessageSize = 1024 * 1024 * 4;
 
+    private int syncFlushTimeout = 1000 * 5;
+
     public int getMapedFileSizeCommitLog() {
         return mapedFileSizeCommitLog;
     }
@@ -166,5 +168,13 @@ public class MessageStoreConfig {
 
     public void setMaxMessageSize(final int maxMessageSize) {
         this.maxMessageSize = maxMessageSize;
+    }
+
+    public int getSyncFlushTimeout() {
+        return syncFlushTimeout;
+    }
+
+    public void setSyncFlushTimeout(final int syncFlushTimeout) {
+        this.syncFlushTimeout = syncFlushTimeout;
     }
 }
