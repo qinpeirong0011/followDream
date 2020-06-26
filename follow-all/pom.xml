@@ -11,6 +11,7 @@
     <modules>
         <module>follow-io</module>
         <module>message-queue</module>
+        <module>forward</module>
     </modules>
 
     <properties>
