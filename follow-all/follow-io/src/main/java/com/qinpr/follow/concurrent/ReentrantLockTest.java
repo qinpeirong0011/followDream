@@ -1,7 +1,6 @@
 package com.qinpr.follow.concurrent;
 
-import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
@@ -11,6 +10,28 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class ReentrantLockTest {
     static ReentrantLock lock = new ReentrantLock(true);
+
+
+    private static Object obj = new Object();
+
+    volatile int a = 0;
+
+    public void say() {
+        List<String> strings = Collections.synchronizedList(new ArrayList<String>());
+        Map<Object, Object> maps = Collections.synchronizedMap(new HashMap<>());
+        Set<Object> sets = Collections.synchronizedSet(new HashSet<>());
+
+
+        lock.lock();
+        lock.unlock();
+        synchronized (obj) {
+            System.out.println("--------");
+        }
+    }
+
+    public synchronized void talk() {
+
+    }
 
     public static void main(String[] args) {
 //        lock.lock();
@@ -32,6 +53,7 @@ public class ReentrantLockTest {
 //        AtomicReference a;
         System.out.println(Integer.MAX_VALUE);
         System.out.println(Integer.MIN_VALUE);
+        new ReentrantLockTest().say();
 
     }
 }

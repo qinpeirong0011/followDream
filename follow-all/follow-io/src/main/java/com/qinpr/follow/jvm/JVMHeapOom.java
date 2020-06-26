@@ -15,8 +15,6 @@ public class JVMHeapOom {
             try {
                 i++;
                 list.add(new byte[1024 * 1024]); //每次增加一个1M大小的数据对象
-
-//                Thread.sleep(500);
             } catch (Throwable t) {
                 t.printStackTrace();
                 flag = false;
